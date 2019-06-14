@@ -26,7 +26,7 @@ Window::Window(GLint windowWidth, GLint windowHeight)
 	}
 }
 
-int Window::Initialise()
+int Window::Initialize()
 {
 	if (!glfwInit())
 	{
