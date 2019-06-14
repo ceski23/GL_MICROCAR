@@ -1,44 +1,35 @@
 #pragma once
-
 #include <GL\glew.h>
-
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
-
 #include <GLFW\glfw3.h>
 
 using namespace std;
-using namespace glm;
 
 class Camera
 {
 private:
-	vec3 pozycja;			//pozycja startowa kamery !
-	vec3 kierunek;			//kierunek kamery
-	vec3 vekGorny;				//górna oœ kamery
-	vec3 vekPrawy;			//prawy wektor kamery
-	vec3 vekGornySwiata;			//górna oœ œwiata
+	glm::vec3 position;
+	glm::vec3 direction;
+	glm::vec3 topAxis;
+	glm::vec3 rightAxis;
+	glm::vec3 worldUpperVector;
 
-	GLfloat yaw;		//obrót (k¹ta kamery) lewo-prawo
-	GLfloat pitch;		//obrót (k¹ta kamery) góra-dó³ 
+	GLfloat yaw;	// left/right
+	GLfloat pitch;	// up/down
 
-	GLfloat szybkoscRuchu;
-	GLfloat szybkoscObracania;
+	GLfloat cameraSpeed;
+	GLfloat rotationSpeed;
 
 	void update();
 
 public:
-	Camera();
-	Camera(vec3 pozycjaStartowa,vec3 gornyVecStartowy, GLfloat yawStartowy, GLfloat pitchStartowy, GLfloat szybkoscRuchu, GLfloat szybkoscObracania);
+	Camera(glm::vec3 startPos, glm::vec3 upperStartVector, GLfloat startYaw, GLfloat startPitch, GLfloat speed, GLfloat rotation);
 
-	void KontrolaKlawiszy(bool* klawisze, GLfloat jednostkaCzasu);
-	void KontrolaMyszy(GLfloat zmianaX, GLfloat zmianaY);
+	void KeyboardControl(bool* keys, GLfloat timeUnit);
+	void MouseControl(GLfloat deltaX, GLfloat deltaY);
 
-	mat4 ObliczMacierzKamery();
-
-	~Camera();
-
-
+	glm::mat4 ComputeCameraMatrix();
 };
 
 

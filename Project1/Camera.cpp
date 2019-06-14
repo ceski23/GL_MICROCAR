@@ -1,67 +1,54 @@
 #include "Camera.h"
 
-Camera::Camera() {}
-
-Camera::Camera(vec3 pozycjaStartowa,vec3 gornyVecStartowy, GLfloat yawStartowy, GLfloat pitchStartowy, GLfloat szybkoscRuchu, GLfloat szybkoscObracania)
+Camera::Camera(glm::vec3 startPos, glm::vec3 upperStartVector, GLfloat startYaw, GLfloat startPitch, GLfloat speed, GLfloat rotation)
 {
-	pozycja = pozycjaStartowa;		//pozycja kamery
-	vekGornySwiata = gornyVecStartowy;				//wektor "zwyk³y" skierowany do góry (wynosi prawie zawsze (0.0, 1.0, 0.0)
-	yaw = yawStartowy;
-	pitch = pitchStartowy;
-	kierunek = glm::vec3(0.0f, 0.0f, -1.0f);
-
-	this->szybkoscRuchu = szybkoscRuchu;
-	this->szybkoscObracania = szybkoscObracania;
+	position = startPos;
+	worldUpperVector = upperStartVector;
+	yaw = startYaw;
+	pitch = startPitch;
+	direction = glm::vec3(0.0f, 0.0f, -1.0f);
+	cameraSpeed = speed;
+	rotationSpeed = rotation;
 
 	update();
 }
 void Camera::update()
 {
-	kierunek.x = cos(radians(yaw)) * cos(radians(pitch));
-	kierunek.y = sin(radians(pitch));
-	kierunek.z = sin(radians(yaw)) * cos(radians(pitch));
-	kierunek = normalize(kierunek);
+	direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	direction.y = sin(glm::radians(pitch));
+	direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	direction = glm::normalize(direction);
 
-	vekPrawy = normalize(cross(kierunek, vekGornySwiata));		//iloczyn wektorowy kierunku kamery oraz wektora górnego (œwiata)
-	vekGorny = normalize(cross(vekPrawy, kierunek));			//iloczyn wektorowy prawej osi kamery oraz kierunku kamery (prawdziwy kierunek "do góry")
+	rightAxis = glm::normalize(glm::cross(direction, worldUpperVector));		//iloczyn wektorowy kierunku kamery oraz wektora górnego (œwiata)
+	topAxis = glm::normalize(glm::cross(rightAxis, direction));			//iloczyn wektorowy prawej osi kamery oraz kierunku kamery (prawdziwy kierunek "do góry")
 }
 
-void Camera::KontrolaMyszy(GLfloat zmianaX, GLfloat zmianaY)
+void Camera::MouseControl(GLfloat deltaX, GLfloat deltaY)
 {
-	zmianaX = zmianaX * szybkoscObracania;
-	zmianaY = zmianaY * szybkoscObracania;
+	deltaX = deltaX * rotationSpeed;
+	deltaY = deltaY * rotationSpeed;
 
-	yaw += zmianaX;
-	pitch += zmianaY;
+	yaw += deltaX;
+	pitch += deltaY;
 
-	if (pitch > 89.0f)
-		pitch = 89.0f;
-	if (pitch < -89.0f)
-		pitch = -89.0f;
+	if (pitch > 89.0f) pitch = 89.0f;
+	if (pitch < -89.0f) pitch = -89.0f;
+
 	update();
 }
 
-void Camera::KontrolaKlawiszy(bool* klawisze, GLfloat jednostkiCzasu)
+void Camera::KeyboardControl(bool* keys, GLfloat timeUnit)
 {
-	GLfloat jednostkiRuchu = szybkoscRuchu * jednostkiCzasu;
+	GLfloat deltaPos = cameraSpeed * timeUnit;
 
-	if (klawisze[GLFW_KEY_W])
-		pozycja += kierunek * jednostkiRuchu;
-	if (klawisze[GLFW_KEY_S])
-		pozycja -= kierunek * jednostkiRuchu;
-	if (klawisze[GLFW_KEY_A])
-		pozycja -= vekPrawy * jednostkiRuchu;
-	if (klawisze[GLFW_KEY_D])
-		pozycja += vekPrawy * jednostkiRuchu;
+	if (keys[GLFW_KEY_W]) position += direction * deltaPos;
+	if (keys[GLFW_KEY_S]) position -= direction * deltaPos;
+	if (keys[GLFW_KEY_A]) position -= rightAxis * deltaPos;
+	if (keys[GLFW_KEY_D]) position += rightAxis * deltaPos;
 }
 
 
-glm::mat4 Camera::ObliczMacierzKamery()
+glm::mat4 Camera::ComputeCameraMatrix()
 {
-	return lookAt(pozycja, pozycja + kierunek, vekGorny);		//pozycja + kierunek --- zapewnia ¿e kamera bêdzie skierowana na punkt docelowy
-}
-
-
-Camera::~Camera()
-{
+	return glm::lookAt(position, position + direction, topAxis);		//pozycja + kierunek --- zapewnia ¿e kamera bêdzie skierowana na punkt docelowy
 }
