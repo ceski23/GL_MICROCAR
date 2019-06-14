@@ -124,7 +124,7 @@ int main()
 	floorTexture = Texture("Textures/floor.png");
 	floorTexture.LoadTextureA();
 
-	mainLight = Light(1.0f,1.0f,1.0f,0.5f,2.0f,-1.0f,-2.0f,1.0f);
+	mainLight = Light(0.5f,2.0f,-1.0f,-2.0f,1.0f);
 	joint = Model();
 	joint.LoadModel("Models/jointNew.obj");
 
@@ -156,7 +156,6 @@ int main()
 
 		camera.KeyboardControl(mainWindow.getsKeys(), deltaTime);
 		camera.MouseControl(mainWindow.getXChange(), mainWindow.getYChange());
-		mainLight.kontrolaKlawiszy(mainWindow.getsKeys());
 		// Clear the window
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -171,7 +170,7 @@ int main()
 		uniformDirection = shaderList[0].GetDirectionLocation();
 		uniformDiffuseIntensity = shaderList[0].GetDiffuseIntensityLocation();
 
-		mainLight.uzycieSwiatla(uniformAmbientIntensity, uniformAmbientColour, uniformDiffuseIntensity, uniformDirection);
+		mainLight.use(uniformAmbientIntensity, uniformAmbientColour, uniformDiffuseIntensity, uniformDirection);
 
 		bool *keys=mainWindow.getsKeys();		
 		
