@@ -59,17 +59,20 @@
 
 \tableofcontents
 \pagebreak
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Opis projektu}
 Celem projektu było stworzenie interaktywnego modelu prostego samochodu korzystając z biblioteki OpenGL. Dzięki wykonaniu projektu poszerzyliśmy naszą wiedzę dotyczącą zarówno tworzenia modeli 3D jak i z pozostałych zagadnień składających się na dziedzinę jaką jest grafika komputerowa. 
 
 Stworzony pojazd z pozwala na jazdę do przodu oraz do tyłu, zaimplementowane zostały także pewne elementy interaktywne takie jak otwieranie i zamykanie klapy bagażnika oraz maski. Samochód posiada także kręcący się wał napędowy napędzający potężny silnik.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Wykorzystane technologie}
 Projekt został napisany przy wykorzystaniu języka C++ w wersji 11. Przy tworzeniu projektu wykorzystywaliśmy bibliotekę graficzną \textit{OpenGL}. Oprócz niej wykorzystana została biblioteka \textit{OpenGL Mathematics}, która pozwala na proste wykorzystanie bardziej skomplikowanych narzędzi aparatu matematycznego. Kolejną biblioteką była \textit{GLFW}, która zapewnia proste API do tworzenia okien, kontekstów i powierzchni, odbierania danych wejściowych i zdarzeń. Załadowanie tych bibliotek było możliwe dzięki bibliotece \textit{OpenGL Extension Wrangler Library}, która zapewnia wydajne mechanizmy uruchamiania w celu określenia, które rozszerzenia OpenGL są obsługiwane na platformie docelowej.
 
 Modele poszczególnych części samochodu zostały stworrzone w narzędziu \textit{Blender}, który jest otwartym oprogramowaniem do modelowania i renderowania obrazów oraz animacji trójwymiarowych. Następnie dzięki bibliotece \textit{Open Asset Import Library} zostały one umieszczone w programie.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Inspiracja}
 Inspiracją do stworzenia omawianego modelu samochodu był posiadany przez jednego z autorów projektu samochód \textit{Microcar MC1} przedstawiony na zdjęciu poniżej.
@@ -89,10 +92,96 @@ Umieszczona w projekcie wersja jest modelem zmodyfikowanym na potrzeby handlu to
     \label{fig:furgon}
     % \vspace{0.5cm}
 \end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Powstawanie projektu}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Hello World}
+\subsection{Plik główny}
+
+\begin{center}
+    Main.cpp
+\end{center}
+
+\begin{cppcode}
+#pragma once
+
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+#include <vector>
+#include <sstream>
+#include <GL\glew.h>
+#include "Window.h"
+
+GLfloat deltaTime = 0.0f;
+GLfloat lastTime = 0.0f;
+GLfloat timeCounter = 0.0f;
+int frameCount = 0;
+
+static const char* vShader = "Shaders/shader.vert";
+static const char* fShader = "Shaders/shader.frag";
+
+void computeFPS(GLFWwindow* pWindow);
+
+int main()
+{
+	Window mainWindow(1200, 800);
+	mainWindow.Initialize();
+
+	while (!mainWindow.getShouldClose())
+	{
+		computeFPS(mainWindow.mainWindow);
+
+		glfwPollEvents();
+
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glUseProgram(0);
+		mainWindow.swapBuffers();
+	}
+
+	return 0;
+}
+\end{cppcode}
+
+Pierwszym plikiem jaki zostął stworzony podczas tworzenia programu był plik Main.cpp wraz z główną funkcją. Funkcja ta jest samym centrum programu. W pętli głównej będą wywoływane główne funkcje odpowiedzialne za obsługę zdarzeń, obsługę shaderów oraz renderowanie poszczególnych elementów.
+
+\begin{cppcode}
+
+GLfloat deltaTime = 0.0f;
+GLfloat lastTime = 0.0f;
+GLfloat timeCounter = 0.0f;
+int frameCount = 0;
+
+static const char* vShader = "Shaders/shader.vert";
+static const char* fShader = "Shaders/shader.frag";
+
+void computeFPS(GLFWwindow* pWindow)
+{
+	GLfloat now = glfwGetTime();
+	deltaTime = now - lastTime;
+	lastTime = now;
+	timeCounter += deltaTime;
+	frameCount++;
+
+	if (timeCounter >= 1.0) {
+		double fps = double(frameCount) / timeCounter;
+
+		std::stringstream ss;
+		ss << " [" << fps << " FPS]";
+
+		glfwSetWindowTitle(pWindow, ss.str().c_str());
+
+		frameCount = 0;
+		timeCounter = 0;
+	}
+}
+\end{cppcode}
+Pierwszą funkcje jaka została zainmplementowana w programie to był licznik kaltek na sekundę, który następnie został umieszczony w tytule okna. Dzięki niemu w łatwy sposób mogliśmy określić wydajność naszej aplikacji. Licznik ten działa w oparciu o ilość czasu który upłynął pomiędzy kolejnymi iteracjami programu.
+\newline
+\indent Aby uniknąć nadmiarowej ilośći kodu w głownym pliku aplikacji, całość kodu odpowiedzialnego za inicjalizacje oraz konfigurację okna został umieszczony w osobnym pliku o nazwie Window.cpp
 \begin{cppcode}
 #include "Window.h"
 
@@ -103,7 +192,10 @@ Window::Window()
 	xChange = 0;
 	yChange = 0;
 	mouseFirstMoved = true;
-	for (size_t i = 0; i < 1024; i++) keys[i] = false;
+	for (size_t i = 0; i < 1024; i++)
+	{
+		keys[i] = false;
+	}
 }
 
 Window::Window(GLint windowWidth, GLint windowHeight)
@@ -113,7 +205,10 @@ Window::Window(GLint windowWidth, GLint windowHeight)
 	xChange = 0;
 	yChange = 0;
 	mouseFirstMoved = true;
-	for (size_t i = 0; i < 1024; i++) keys[i] = false;
+	for (size_t i = 0; i < 1024; i++)
+	{
+		keys[i] = false;
+	}
 }
 
 int Window::Initialize()
@@ -127,11 +222,15 @@ int Window::Initialize()
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
 	glfwWindowHint(GLFW_REFRESH_RATE, 60);
 
 	const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+    glfwGetPrimaryMonitor(), NULL);
 	mainWindow = glfwCreateWindow(width, height, "Microcar Flex Furgon", NULL, NULL);
 	width = mode->width;
 	height = mode->height;
@@ -143,7 +242,9 @@ int Window::Initialize()
 	}
 
 	glfwGetFramebufferSize(mainWindow, &bufferWidth, &bufferHeight);
+
 	glfwMakeContextCurrent(mainWindow);
+
 	createCallbacks();
 	glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -159,7 +260,9 @@ int Window::Initialize()
 	}
 
 	glEnable(GL_DEPTH_TEST);
+
 	glViewport(0, 0, bufferWidth, bufferHeight);
+
 	glfwSetWindowUserPointer(mainWindow, this);
 }
 
@@ -233,74 +336,181 @@ Window::~Window()
 	glfwDestroyWindow(mainWindow);
 	glfwTerminate();
 }
+
 \end{cppcode}
 
-\begin{cppcode}
-#pragma once
-
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-#include <vector>
-#include <sstream>
-#include <GL\glew.h>
-#include "Window.h"
-
-GLfloat deltaTime = 0.0f;
-GLfloat lastTime = 0.0f;
-GLfloat timeCounter = 0.0f;
-int frameCount = 0;
-
-static const char* vShader = "Shaders/shader.vert";
-static const char* fShader = "Shaders/shader.frag";
-
-void computeFPS(GLFWwindow* pWindow)
-{
-	GLfloat now = glfwGetTime();
-	deltaTime = now - lastTime;
-	lastTime = now;
-	timeCounter += deltaTime;
-	frameCount++;
-
-	if (timeCounter >= 1.0) {
-		double fps = double(frameCount) / timeCounter;
-
-		std::stringstream ss;
-		ss << " [" << fps << " FPS]";
-
-		glfwSetWindowTitle(pWindow, ss.str().c_str());
-
-		frameCount = 0;
-		timeCounter = 0;
-	}
-}
-
-int main()
-{
-	Window mainWindow(1200, 800);
-	mainWindow.Initialize();
-
-	while (!mainWindow.getShouldClose())
-	{
-		computeFPS(mainWindow.mainWindow);
-
-		glfwPollEvents();
-
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		glUseProgram(0);
-		mainWindow.swapBuffers();
-	}
-
-	return 0;
-}
-\end{cppcode}
-
+Klasa Window, posiada dwa konstruktory. Jeden z nich służy do utworzenia okna o zadanym rozmiarze, natomiast drugo tworzy okno o rozmiarze 800x600 [px]. Można znaleść również destruktor tej klasy który uwalnia pamięć, która była wykorzystywana przez ten obiekt. 
+******
+TODO: Co to jest z tą myszką klawiaturą i callback
+******
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Utworzenie podłoża}
+Pierwszą rzeczą jaką postanowiliśmy utworzyć w naszym programie było podłoże na którym będzie stał nasz obiekt. 
+\begin{cppcode}
+#include "Floor.h"
 
+Floor::Floor()
+{
+
+}
+
+void Floor::render(Camera camera, glm::mat4 projection, GLuint uniformProjection, GLuint uniformView, GLuint uniformModel)
+{
+	glm::mat4 model(1.0f);
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0, -0.35f, 0.0f));
+	glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+	glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.ComputeCameraMatrix()));
+	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+}
+\end{cppcode}
+
+Podłoga została stworzona bez żadnego problemu, ale nie posiada żandej tekstury przez co jest niewidoczna. W celu dodania tekstury do obeikty wymagane było stworzenie meshu oraz funkcji odpowiedzialnych za ładowanie tekstur oraz przydzielanie ich do obiektów. Podczas realizacji projektu został wybrany mesh po to, aby w łątwiejszy sposób można było dodać teksturę do obeiktu jaki właśnie stworzyliśmy.Kod po wprowadzonych zmianach zyskał następujące rzeczy:
+\begin{cppcode}
+#include "Floor.h"
+
+Floor::Floor(GLfloat size)
+{
+	unsigned int floorIndices[] = {
+		0,2,1,
+		1,2,3
+	};
+
+	GLfloat floorVertices[] = {
+		-size,  0.0f, -size,   0.0f,  0.0f,   0.0f,  0.0f,  0.0f,
+		 size,  0.0f, -size,  size,  0.0f,	0.0f,  0.0f,  0.0f,
+		-size,  0.0f,  size,   0.0f,  size,	0.0f,  0.0f,  0.0f,
+		 size,  0.0f,  size,  size,  size,  0.0f,  0.0f,  0.0f
+	};
+
+	mesh.CreateMesh(floorVertices, floorIndices, 32, 6);
+
+	texture.LoadTextureA();
+}
+
+void Floor::render(Camera camera, glm::mat4 projection, GLuint uniformProjection, GLuint uniformView, GLuint uniformModel)
+{
+    .
+    .   
+    .
+    
+	texture.UseTexture();
+	mesh.RenderMesh();
+}
+\end{cppcode}
+
+Należy pamiętać również o tym, że jeżeli podłoga ma się pojawić w naszym programie to musi zostać dodana do głównej pętli programu.
+\begin{cppcode}
+
+        .
+        .
+        .
+        
+	Floor floor(20.0f);
+        .
+        .
+        .
+	while (!mainWindow.getShouldClose())
+	{
+        .
+        .
+        .
+
+		floor.render(camera, projection, uniformProjection, uniformView, uniformModel);
+		
+        .
+        .
+        .
+	}
+\end{cppcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Teksturowanie}
+Każdy obiekt stworzony w naszym programie posiada własną teksturę. W tym celu została stworozny cały odrępny plik pod nazwą Texture.cpp. Posiada on funkcje ładowania tekstury z pliku jak i jej czysczenie. 
+\begin{cppcode}
+#include "Texture.h"
+
+Texture::Texture()
+{
+	textureID = 0;
+	width = 0;
+	height = 0;
+	bitDepth = 0;
+	fileLocation = "";
+}
+
+Texture::Texture(const char* fileLoc)
+{
+	textureID = 0;
+	width = 0;
+	height = 0;
+	bitDepth = 0;
+	fileLocation = fileLoc;
+}
+bool Texture::LoadTexture()
+{
+	unsigned char *texData = stbi_load(fileLocation, &width, &height, &bitDepth, 0);
+	if (!texData)
+	{
+		printf("Failed to fint: %s\n", fileLocation);
+		return false;
+	}
+
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D,textureID);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texData);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	stbi_image_free(texData);
+
+	return true;
+}
+bool Texture::LoadTextureA()
+{
+    .
+    .
+    .
+}
+void Texture::UseTexture()
+{
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+}
+
+void Texture::ClearTexture()
+{
+	glDeleteTextures(1, &textureID);
+	textureID = 0;
+	width = 0;
+	height = 0;
+	bitDepth = 0;
+	fileLocation = "";
+
+}
+
+Texture::~Texture()
+{
+	ClearTexture();
+}
+\end{cppcode}
+Klasa posiada dwa typy funkcji LoadTexture, różnica polega na tym, że funkcja LoadTextureA posiada kanał alpha w teksturze. Aby dodać taką funkcjonalnośc do programu należało zmienić jedną linijkę kodu.
+\begin{cppcode}
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData);
+\end{cppcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Stworzenie modeli 3D}
+
+Tak jak to było wspomnianne we wstępie do dokumentacji, cały samochód został wykonany za pomocą programu Blender. Na początku jednak samochód był tworzony ręcznie, za pomocą trójkątów. Taki sposób tworzenia samochodu był bardzo pracochłonny oraz generował bardzo duże trudności podczas dodawania kolejnych elmentów auta, dlatego też autorzy zdecydowali się na utworzenie modelów w programie Blender, a następnie wyeksportowanie do takeigo formatu, aby nie było porblemu z ich implementacją w kodzie. 
+Na samymm początku było tworzone podwozie pojazdu.
 
 \begin{figure}[H]
     \centering
@@ -310,10 +520,26 @@ int main()
     % \vspace{0.5cm}
 \end{figure}
 
+Jak widać na rysunku \ref{fig:podwozie} podwozie składa się z kilku  prostych elementów. Na samym początku znajduje się silnik wraz z przegubami, następnie wał kardana wędruje do tylnej osi. Poswtał również cały ukłąd wydechowy w samochodzie. Model ten nie posiada samych krzyżaków na wale, a także kół, gdyż aby te elementy były możliwe do zaanimowania musiały być tworzone jako osobne elementy. 
 
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{joint.png}
+    \caption{Przegub Cardana}
+    \label{fig:joint}
+\end{figure}
+
+ Na rysunku \ref{fig:joint} został zaprezentowany przegub Cardana, który jest istotnym elementem każdego wału napędowego w samochodzie. Przeguby w układach napędowych służą do przekazywania momentu obrotowego z jednego wału na inny, gdy osie obrotu tych wałów są do siebie nachylone. Stworzenie takeigo elementu w programie Blender nie było trudne. Taki przegub składa się z dwóch rzeczy: krzyżaka oraz jego uchwytu.
+ \newline
+ \indent W podobny sposób zostały wykonane koła dla samochodu. Zostało stworzone jedno koło, które następnie zostało wielokrotnie wykorzystane w procesie implementacji modelu. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Implementacja modeli w programie}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Ożywienie samochodu}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Obsługa programu}
 \section{Podsumowanie}
 \begin{figure}[h!]
     \centering
@@ -323,6 +549,10 @@ int main()
     \label{fig:furgon}
     % \vspace{0.5cm}
 \end{figure}
+
+Jak widać na rysunku \ref{fig:furgon} efekt naszej pracy jest bardzo bliski temu co staraliśmy się odwzorować. Nie był to łątwy projekt. Podczas jego realizacji napotkaliśmy wiele problemów. Niektóre z nich były łatwe w rozwiązaniu, np. problem z ruchem kamery oraz prawidłowym ładowaniu tekstur, a niektóre zajęły czasami tygodnie. Najtrudniejszym zadaniem okazało się poprawne umieszczenie stworzonego obiektu w Blenderze oraz jego zaanimowanie. Autorzy projektu nigdy wcześniej nie mieli styczności z takim typem projektu. Wymagało to od nich nabycia zupełnie nowej wiedzy, aby zrealizować ten projekt bez problemów.
+\newline
+\indent Podczas realizacji projektu niezwykle pomocnym okazały się wykłady prowadzone przez Pana Dr. Ryszarda Leniowskiego. Dzięki tym wykładą autorzy projektu mogli zrozumieć charakterysytkę projektu jaki sobie postawili za cel do zrealizowania, a także dogłębnie zorzumieć jak działają biblioteki graficzne.
 
 % \begin{pythoncode}
 % def forward(self, x):
