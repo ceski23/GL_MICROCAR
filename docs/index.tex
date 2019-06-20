@@ -104,16 +104,6 @@ Umieszczona w projekcie wersja jest modelem zmodyfikowanym na potrzeby handlu to
 \end{center}
 
 \begin{cppcode}
-#pragma once
-
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-#include <vector>
-#include <sstream>
-#include <GL\glew.h>
-#include "Window.h"
-
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
 GLfloat timeCounter = 0.0f;
@@ -147,16 +137,9 @@ int main()
 \end{cppcode}
 
 Pierwszym plikiem jaki zostął stworzony podczas tworzenia programu był plik Main.cpp wraz z główną funkcją. Funkcja ta jest samym centrum programu. W pętli głównej będą wywoływane główne funkcje odpowiedzialne za obsługę zdarzeń, obsługę shaderów oraz renderowanie poszczególnych elementów.
+To własnie ta pętla odpowiada za ponowne wyświetlanie wszystkich elementów.
 
 \begin{cppcode}
-
-GLfloat deltaTime = 0.0f;
-GLfloat lastTime = 0.0f;
-GLfloat timeCounter = 0.0f;
-int frameCount = 0;
-
-static const char* vShader = "Shaders/shader.vert";
-static const char* fShader = "Shaders/shader.frag";
 
 void computeFPS(GLFWwindow* pWindow)
 {
@@ -179,37 +162,11 @@ void computeFPS(GLFWwindow* pWindow)
 	}
 }
 \end{cppcode}
+
 Pierwszą funkcje jaka została zainmplementowana w programie to był licznik kaltek na sekundę, który następnie został umieszczony w tytule okna. Dzięki niemu w łatwy sposób mogliśmy określić wydajność naszej aplikacji. Licznik ten działa w oparciu o ilość czasu który upłynął pomiędzy kolejnymi iteracjami programu.
 \newline
 \indent Aby uniknąć nadmiarowej ilośći kodu w głownym pliku aplikacji, całość kodu odpowiedzialnego za inicjalizacje oraz konfigurację okna został umieszczony w osobnym pliku o nazwie Window.cpp
 \begin{cppcode}
-#include "Window.h"
-
-Window::Window()
-{
-	width = 800;
-	height = 600;
-	xChange = 0;
-	yChange = 0;
-	mouseFirstMoved = true;
-	for (size_t i = 0; i < 1024; i++)
-	{
-		keys[i] = false;
-	}
-}
-
-Window::Window(GLint windowWidth, GLint windowHeight)
-{
-	width = windowWidth;
-	height = windowHeight;
-	xChange = 0;
-	yChange = 0;
-	mouseFirstMoved = true;
-	for (size_t i = 0; i < 1024; i++)
-	{
-		keys[i] = false;
-	}
-}
 
 int Window::Initialize()
 {
@@ -265,27 +222,14 @@ int Window::Initialize()
 
 	glfwSetWindowUserPointer(mainWindow, this);
 }
+\end{cppcode}
 
-void Window::createCallbacks()
-{
-	glfwSetKeyCallback(mainWindow, handleKeys);
-	glfwSetCursorPosCallback(mainWindow, handleMouse);
-}
+W funkcji inicjalizacyjnej okna ustawiane są wszelkie niezbędne parametry do utworzenia okna aplikacji. Definiowany jest rozmiar okna, tryb pracy biblioteki openGl, a także odświeżanie okna oraz obsługa zdarzeń. W aplikacji została zainmplementowana obsługa zdarzeń, po przez stworzenie jednej wielkiej tablicy z aktualnym stanem klawiszy.
+\newline
 
-GLfloat Window::getXChange()
-{
-	GLfloat theChange = xChange;
-	xChange = 0.0f;
-	return theChange;
-}
+\indent W celu obsługi zdarzeń klawiszy została stworzona funkcja o nazwie handleKeys, która została przedstawiona w listingu kodu poniżej. W funkcji tej wykrywane jest, który klawisz został naciśnięty i odpowiednio zmieniany jest jego stan w tablicy.
 
-GLfloat Window::getYChange()
-{
-	GLfloat theChange = yChange;
-	yChange = 0.0f;
-	return theChange;
-}
-
+\begin{cppcode}
 void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int mode)
 {
 	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
@@ -312,6 +256,12 @@ void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int m
 		}
 	}
 }
+\end{cppcode}
+
+W kolejnym listiningu code przedstawione jest to jak stworzona została funkcja przechwytująca ruchy myszką. Są one tak samo przechowywane w odpowiednich zmiennych, aby można było w łatwy sposób z nich korzystać.
+
+\begin{cppcode}
+    
 
 void Window::handleMouse(GLFWwindow* window, double xPos, double yPos)
 {
@@ -331,29 +281,27 @@ void Window::handleMouse(GLFWwindow* window, double xPos, double yPos)
 	theWindow->lastY = yPos;
 }
 
-Window::~Window()
+\end{cppcode}
+
+W celu implementacji tych własnoręcznie napisanych funkcji obsługi zdarzeń, zostały one podpięte pod callbacki funkcji OpenGl'owych.
+
+\begin{cppcode}
+
+void Window::createCallbacks()
 {
-	glfwDestroyWindow(mainWindow);
-	glfwTerminate();
+	glfwSetKeyCallback(mainWindow, handleKeys);
+	glfwSetCursorPosCallback(mainWindow, handleMouse);
 }
 
 \end{cppcode}
 
-Klasa Window, posiada dwa konstruktory. Jeden z nich służy do utworzenia okna o zadanym rozmiarze, natomiast drugo tworzy okno o rozmiarze 800x600 [px]. Można znaleść również destruktor tej klasy który uwalnia pamięć, która była wykorzystywana przez ten obiekt. 
-******
-TODO: Co to jest z tą myszką klawiaturą i callback
-******
+Klasa Window, posiada również dwa konstruktory. Jeden z nich służy do utworzenia okna o zadanym rozmiarze, natomiast drugo tworzy okno o rozmiarze 800x600 [px]. Można znaleść również destruktor tej klasy który uwalnia pamięć, która była wykorzystywana przez ten obiekt. 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Utworzenie podłoża}
 Pierwszą rzeczą jaką postanowiliśmy utworzyć w naszym programie było podłoże na którym będzie stał nasz obiekt. 
 \begin{cppcode}
-#include "Floor.h"
-
-Floor::Floor()
-{
-
-}
 
 void Floor::render(Camera camera, glm::mat4 projection, GLuint uniformProjection, GLuint uniformView, GLuint uniformModel)
 {
@@ -368,8 +316,6 @@ void Floor::render(Camera camera, glm::mat4 projection, GLuint uniformProjection
 
 Podłoga została stworzona bez żadnego problemu, ale nie posiada żandej tekstury przez co jest niewidoczna. W celu dodania tekstury do obeikty wymagane było stworzenie meshu oraz funkcji odpowiedzialnych za ładowanie tekstur oraz przydzielanie ich do obiektów. Podczas realizacji projektu został wybrany mesh po to, aby w łątwiejszy sposób można było dodać teksturę do obeiktu jaki właśnie stworzyliśmy.Kod po wprowadzonych zmianach zyskał następujące rzeczy:
 \begin{cppcode}
-#include "Floor.h"
-
 Floor::Floor(GLfloat size)
 {
 	unsigned int floorIndices[] = {
@@ -391,9 +337,7 @@ Floor::Floor(GLfloat size)
 
 void Floor::render(Camera camera, glm::mat4 projection, GLuint uniformProjection, GLuint uniformView, GLuint uniformModel)
 {
-    .
-    .   
-    .
+    ...
     
 	texture.UseTexture();
 	mesh.RenderMesh();
@@ -402,52 +346,23 @@ void Floor::render(Camera camera, glm::mat4 projection, GLuint uniformProjection
 
 Należy pamiętać również o tym, że jeżeli podłoga ma się pojawić w naszym programie to musi zostać dodana do głównej pętli programu.
 \begin{cppcode}
-
-        .
-        .
-        .
-        
+    ...
 	Floor floor(20.0f);
-        .
-        .
-        .
+    ...
 	while (!mainWindow.getShouldClose())
 	{
-        .
-        .
-        .
+    ...
 
 		floor.render(camera, projection, uniformProjection, uniformView, uniformModel);
-		
-        .
-        .
-        .
+	...
 	}
 \end{cppcode}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Teksturowanie}
-Każdy obiekt stworzony w naszym programie posiada własną teksturę. W tym celu została stworozny cały odrępny plik pod nazwą Texture.cpp. Posiada on funkcje ładowania tekstury z pliku jak i jej czysczenie. 
+Każdy obiekt stworzony w naszym programie posiada własną teksturę. W tym celu została stworozny cały odrępny plik pod nazwą Texture.cpp. Posiada on funkcje ładowania tekstury z pliku jak i jej czysczenie. W celu przypisania przygotowanej tekstury do obeiktu wykorzystywana jest funkcja UseTexture, która podmienia aktualną teksturę obiektu na tą zadaną.
 \begin{cppcode}
-#include "Texture.h"
 
-Texture::Texture()
-{
-	textureID = 0;
-	width = 0;
-	height = 0;
-	bitDepth = 0;
-	fileLocation = "";
-}
-
-Texture::Texture(const char* fileLoc)
-{
-	textureID = 0;
-	width = 0;
-	height = 0;
-	bitDepth = 0;
-	fileLocation = fileLoc;
-}
 bool Texture::LoadTexture()
 {
 	unsigned char *texData = stbi_load(fileLocation, &width, &height, &bitDepth, 0);
@@ -476,9 +391,7 @@ bool Texture::LoadTexture()
 }
 bool Texture::LoadTextureA()
 {
-    .
-    .
-    .
+    ...
 }
 void Texture::UseTexture()
 {
@@ -497,12 +410,14 @@ void Texture::ClearTexture()
 
 }
 
-Texture::~Texture()
-{
-	ClearTexture();
-}
 \end{cppcode}
-Klasa posiada dwa typy funkcji LoadTexture, różnica polega na tym, że funkcja LoadTextureA posiada kanał alpha w teksturze. Aby dodać taką funkcjonalnośc do programu należało zmienić jedną linijkę kodu.
+
+Klasa posiada dwa typy funkcji LoadTexture, różnica polega na tym, że funkcja LoadTextureA posiada kanał alpha w teksturze. Aby dodać taką funkcjonalnośc do programu należało zmienić jedną linijkę kodu z:
+
+\begin{cppcode}
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texData);
+\end{cppcode}
+Na
 \begin{cppcode}
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texData);
 \end{cppcode}
@@ -532,6 +447,8 @@ Jak widać na rysunku \ref{fig:podwozie} podwozie składa się z kilku  prostych
  Na rysunku \ref{fig:joint} został zaprezentowany przegub Cardana, który jest istotnym elementem każdego wału napędowego w samochodzie. Przeguby w układach napędowych służą do przekazywania momentu obrotowego z jednego wału na inny, gdy osie obrotu tych wałów są do siebie nachylone. Stworzenie takeigo elementu w programie Blender nie było trudne. Taki przegub składa się z dwóch rzeczy: krzyżaka oraz jego uchwytu.
  \newline
  \indent W podobny sposób zostały wykonane koła dla samochodu. Zostało stworzone jedno koło, które następnie zostało wielokrotnie wykorzystane w procesie implementacji modelu. 
+ \newline
+ \indent Cała karoseria pojazdu na początku została stworzona jako jednolita bryła, niestety w taki sposób nie istnieje łatwy sposób na zaanimowanie pewnych części karoserii. Jako osobne obiekty zostały wyeksportowane takie lementy jak: maska oraz klapa bagażnika. W ten o to sposób samochód zyskał możliwość otwierania oraz zamykania klaby bagażnika oraz maski. 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
