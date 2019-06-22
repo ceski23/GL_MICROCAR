@@ -299,6 +299,36 @@ Klasa Window, posiada również dwa konstruktory. Jeden z nich służy do utworz
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+\subsection{Kamera}
+Aby móc modyfikować to co użytkownik widzi na ekranie napisana została klasa \mintinline{cpp}{Camera} implementująca kamerę. Aby zdefiniować kamerę, potrzebujemy jej pozycji w przestrzeni świata, kierunku, w którym patrzy, wektora wskazującego w prawo i wektora skierowanego w górę od kamery. Będziemy tworzyć układ współrzędnych z 3 prostopadłymi do siebie osiami jednostkowymi z pozycją kamery jako początkiem układu.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{camera_axes.png}
+    \caption{Najważniejsze parametry kamery}
+    \label{fig:camera}
+    % \vspace{0.5cm}
+\end{figure}
+
+Jeżeli zdefiniuje się przestrzeń współrzędnych za pomocą 3 prostopadłych (lub nie liniowych) osi, można utworzyć macierz z tymi 3 osiami i wektorem translacji, dzięki czemu można przekształcić dowolny wektor do tego stworzonego układu współrzędnych, mnożąc ten wektor przez tą macierz. Ta zależność znacznie ułatwia dalszą implementację kamery. Opisany wyżej proces jest realizowany przez funkcję \mintinline{cpp}{glm::lookAt()}, która wymaga wektora pozycji, punktu, na który ma być skierowana kamera i górnego wektora. Tworzy ona odpowiednią macierz widoku.
+
+Kolejnym krokiem było umożliwienie poruszania kamerą przez użytkownika. W tym celu utworzona została funkcja \mintinline{cpp}{MouseControl()}, dzięki której każdorazowe naciśnięcie jednego z klawiszy strzałek spowoduje aktualizację pozycji kamery. Do poruszania się do przodu lub do tyłu, należy dodać lub odjąć wektor kierunku od wektora położenia. Natomiast do przesuwania się na boki, wykonać iloczyn wektorowy, aby utworzyć prawy wektor i odpowiednio poruszać się wzdłuż tego wektora w prawo.
+
+Do pełnej wygody korzystania z kamery brakowało jeszcze możliwości rozglądania się. Do tego celu wykorzystaliśmy kąty Eulera — \textit{pitch}, \textit{yaw} i \textit{roll}. 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{euler_axes.png}
+    \caption{Rozkład kątów Eulera}
+    \label{fig:axes}
+    % \vspace{0.5cm}
+\end{figure}
+
+Pitch to kąt, który obrazuje, jak bardzo patrzymy w górę lub w dół. Yaw reprezentuje wielkość tego jak bardzo patrzymy w lewo lub w prawo. Roll oznacza, jak bardzo się turlamy, co jest najczęściej używane w statkach kosmicznych i powietrznych. Każdy z kątów Eulera jest reprezentowany przez pojedynczą wartość, a za pomocą kombinacji wszystkich trzech z nich możemy obliczyć dowolny wektor rotacji w 3D.
+
+W naszy systemie wykorzystaliśmy tylko kąty \textit{pitch} i \textit{yaw}, a do ich modyfikacji wykorzystujemy ruch myszki.
+
+
 \subsection{Utworzenie podłoża}
 Pierwszą rzeczą jaką postanowiliśmy utworzyć w naszym programie było podłoże na którym będzie stał nasz obiekt. 
 \begin{cppcode}
@@ -445,14 +475,24 @@ Jak widać na rysunku \ref{fig:podwozie} podwozie składa się z kilku  prostych
 \end{figure}
 
  Na rysunku \ref{fig:joint} został zaprezentowany przegub Cardana, który jest istotnym elementem każdego wału napędowego w samochodzie. Przeguby w układach napędowych służą do przekazywania momentu obrotowego z jednego wału na inny, gdy osie obrotu tych wałów są do siebie nachylone. Stworzenie takeigo elementu w programie Blender nie było trudne. Taki przegub składa się z dwóch rzeczy: krzyżaka oraz jego uchwytu.
- \newline
- \indent W podobny sposób zostały wykonane koła dla samochodu. Zostało stworzone jedno koło, które następnie zostało wielokrotnie wykorzystane w procesie implementacji modelu. 
- \newline
- \indent Cała karoseria pojazdu na początku została stworzona jako jednolita bryła, niestety w taki sposób nie istnieje łatwy sposób na zaanimowanie pewnych części karoserii. Jako osobne obiekty zostały wyeksportowane takie lementy jak: maska oraz klapa bagażnika. W ten o to sposób samochód zyskał możliwość otwierania oraz zamykania klaby bagażnika oraz maski. 
+ 
+ W podobny sposób zostały wykonane koła dla samochodu. Zostało stworzone jedno koło, które następnie zostało wielokrotnie wykorzystane w procesie implementacji modelu. 
+
+ \begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{nadwozie.png}
+    \caption{Nadwozie samochodu}
+    \label{fig:nadwozie}
+\end{figure}
+
+Cała karoseria pojazdu na początku została stworzona jako jednolita bryła, niestety w taki sposób nie istnieje łatwy sposób na zaanimowanie pewnych części karoserii. Jako osobne obiekty zostały wyeksportowane takie lementy jak: maska oraz klapa bagażnika. W ten o to sposób samochód zyskał możliwość otwierania oraz zamykania klaby bagażnika oraz maski. 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Implementacja modeli w programie}
+Stworzone w Blenderze modele 3D należało następnie dodać do projektu. Aby to zrobić posłużyliśmy się biblioteką \textit{Assimp}. Służy ona do importowania modeli 3D w różnych formatach do OpenGL'a.
+
+Na początku utworzyliśmy klasę \mintinline{cpp}{Model}, która będzie służyła jako kontener na meshe, materiały i tekstury naszych obiektów. Klasa ta posiada kilka metod do ładowania poszczególnych części modelu, a także funkcję \mintinline{cpp}{RenderModel()}, dzięki której cały model jest renderowany w oknie.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Ożywienie samochodu}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
