@@ -493,8 +493,93 @@ Cała karoseria pojazdu na początku została stworzona jako jednolita bryła, n
 Stworzone w Blenderze modele 3D należało następnie dodać do projektu. Aby to zrobić posłużyliśmy się biblioteką \textit{Assimp}. Służy ona do importowania modeli 3D w różnych formatach do OpenGL'a.
 
 Na początku utworzyliśmy klasę \mintinline{cpp}{Model}, która będzie służyła jako kontener na meshe, materiały i tekstury naszych obiektów. Klasa ta posiada kilka metod do ładowania poszczególnych części modelu, a także funkcję \mintinline{cpp}{RenderModel()}, dzięki której cały model jest renderowany w oknie.
+
+\begin{figure}[H]
+\begin{cppcode}
+void Model::LoadModel(const std::string& fileName)
+{
+	Assimp::Importer importer;
+	const aiScene *scene = importer.ReadFile(fileName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices);
+	LoadNode(scene->mRootNode, scene);
+	LoadMaterials(scene);
+}
+\end{cppcode}
+\caption{Funkcja ładująca model}
+\end{figure}
+
+\begin{figure}[H]
+\begin{cppcode}
+void Model::RenderModel()
+{
+	for (size_t i = 0; i < meshList.size(); i++) {
+		unsigned int materialIndex = meshToTex[i];
+
+		if (materialIndex < textureList.size() && textureList[materialIndex]) {
+			textureList[materialIndex]->UseTexture();
+		}
+		meshList[i]->RenderMesh();
+	}
+}
+\end{cppcode}
+\caption{Funkcja renderująca model}
+\end{figure}
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Ożywienie samochodu}
+
+W celu łatwiejszego zarządzania pojazdem utworzona została klasa \mintinline{cpp}{Car}, w której zawarte zostały najważniejsze parametry pojazdu. Funkcja \mintinline{cpp}{computeMovement()} służy do obliczenia pozycji samochodu oraz obrotu kół.
+
+\begin{cppcode}
+void Car::computeMovement(GLfloat deltaTime)
+{
+	GLfloat angle = (velocity * deltaTime) / 1.0f;
+	wheelRotation += glm::degrees(angle);
+	wheelRotation = fmod(wheelRotation, 360.0f);
+
+	GLfloat roadLength = (velocity * deltaTime);
+	position[0] += roadLength * sin(glm::radians(azymuth * 0.5));
+	position[1] += roadLength * cos(glm::radians(azymuth * 0.5));
+}
+\end{cppcode}
+
+Obliczane w tej funkcji parametry są potem uwzględniane przy renderowaniu modelu.
+
+\begin{itemize}
+\item Strzałka w górę — zwiększa prędkość pojazdu
+\item Strzałka w dół — zmniejsza prędkość pojazdu
+\item Strzałka w lewo — obrót kół w lewo
+\item Strzałka w prawo — obrót kół w prawo
+
+\item Klawisz 1 — otwieranie maski
+\item Klawisz 2 — zamykanie maski
+\item Klawisz 3 — otwieranie bagażnika
+\item Klawisz 4 — zamykanie bagażnika
+\end{itemize}
+
+W funkcji \mintinline{cpp}{reactToInput()} modyfikowane są parametry samochodu w zależności od wciśniętych klawiszy. Dzięki temu doszła możliwość otwierania bagażnika oraz maski, a także skręcania kołami.
+
+\begin{cppcode}
+void Car::reactToInput(bool* keys)
+{
+	if (keys[GLFW_KEY_UP] && velocity < maxSpeed) velocity += 0.1f;
+	if (keys[GLFW_KEY_DOWN] && velocity > -maxSpeed) velocity -= 0.1f;
+	if (keys[GLFW_KEY_SPACE]) velocity = 0.0f;
+
+	if (keys[GLFW_KEY_1] && hoodDegree < 90.0f) hoodDegree += 1.0f;
+	if (keys[GLFW_KEY_2] && hoodDegree > 0.0f) hoodDegree -= 1.0f;
+
+	if (keys[GLFW_KEY_3] && flapDegree < 90.0f) flapDegree += 1.0f;
+	if (keys[GLFW_KEY_4] && flapDegree > 0.0f) flapDegree -= 1.0f;
+
+	if (keys[GLFW_KEY_LEFT] && turnAngle < 30.0f) turnAngle += 0.2f;
+	if (keys[GLFW_KEY_RIGHT] && turnAngle > -30.0f) turnAngle -= 0.2f;
+
+	hideBody = keys[GLFW_KEY_B];
+}
+\end{cppcode}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Obsługa programu}
 \section{Podsumowanie}
