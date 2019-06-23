@@ -70,7 +70,7 @@ Stworzony pojazd z pozwala na jazdę do przodu oraz do tyłu, zaimplementowane z
 \subsection{Wykorzystane technologie}
 Projekt został napisany przy wykorzystaniu języka C++ w wersji 11. Przy tworzeniu projektu wykorzystywaliśmy bibliotekę graficzną \textit{OpenGL}. Oprócz niej wykorzystana została biblioteka \textit{OpenGL Mathematics}, która pozwala na proste wykorzystanie bardziej skomplikowanych narzędzi aparatu matematycznego. Kolejną biblioteką była \textit{GLFW}, która zapewnia proste API do tworzenia okien, kontekstów i powierzchni, odbierania danych wejściowych i zdarzeń. Załadowanie tych bibliotek było możliwe dzięki bibliotece \textit{OpenGL Extension Wrangler Library}, która zapewnia wydajne mechanizmy uruchamiania w celu określenia, które rozszerzenia OpenGL są obsługiwane na platformie docelowej.
 
-Modele poszczególnych części samochodu zostały stworrzone w narzędziu \textit{Blender}, który jest otwartym oprogramowaniem do modelowania i renderowania obrazów oraz animacji trójwymiarowych. Następnie dzięki bibliotece \textit{Open Asset Import Library} zostały one umieszczone w programie.
+Modele poszczególnych części samochodu zostały stworzone w narzędziu \textit{Blender}, który jest otwartym oprogramowaniem do modelowania i renderowania obrazów oraz animacji trójwymiarowych. Następnie dzięki bibliotece \textit{Open Asset Import Library} zostały one umieszczone w programie.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -137,7 +137,7 @@ int main()
 \end{cppcode}
 
 Pierwszym plikiem jaki zostął stworzony podczas tworzenia programu był plik Main.cpp wraz z główną funkcją. Funkcja ta jest samym centrum programu. W pętli głównej będą wywoływane główne funkcje odpowiedzialne za obsługę zdarzeń, obsługę shaderów oraz renderowanie poszczególnych elementów.
-To własnie ta pętla odpowiada za ponowne wyświetlanie wszystkich elementów.
+To właśnie ta pętla odpowiada za ponowne wyświetlanie wszystkich elementów.
 
 \begin{cppcode}
 
@@ -163,9 +163,9 @@ void computeFPS(GLFWwindow* pWindow)
 }
 \end{cppcode}
 
-Pierwszą funkcje jaka została zainmplementowana w programie to był licznik kaltek na sekundę, który następnie został umieszczony w tytule okna. Dzięki niemu w łatwy sposób mogliśmy określić wydajność naszej aplikacji. Licznik ten działa w oparciu o ilość czasu który upłynął pomiędzy kolejnymi iteracjami programu.
+Pierwszą funkcje jaka została zaimplementowana w programie to był licznik klatek na sekundę, który następnie został umieszczony w tytule okna. Dzięki niemu w łatwy sposób mogliśmy określić wydajność naszej aplikacji. Licznik ten działa w oparciu o ilość czasu który upłynął pomiędzy kolejnymi iteracjami programu.
 \newline
-\indent Aby uniknąć nadmiarowej ilośći kodu w głownym pliku aplikacji, całość kodu odpowiedzialnego za inicjalizacje oraz konfigurację okna został umieszczony w osobnym pliku o nazwie Window.cpp
+\indent Aby uniknąć nadmiarowej ilości kodu w głównym pliku aplikacji, całość kodu odpowiedzialnego za inicjalizacje oraz konfigurację okna został umieszczony w osobnym pliku o nazwie Window.cpp
 \begin{cppcode}
 
 int Window::Initialize()
@@ -224,7 +224,7 @@ int Window::Initialize()
 }
 \end{cppcode}
 
-W funkcji inicjalizacyjnej okna ustawiane są wszelkie niezbędne parametry do utworzenia okna aplikacji. Definiowany jest rozmiar okna, tryb pracy biblioteki openGl, a także odświeżanie okna oraz obsługa zdarzeń. W aplikacji została zainmplementowana obsługa zdarzeń, po przez stworzenie jednej wielkiej tablicy z aktualnym stanem klawiszy.
+W funkcji inicjalizacyjnej okna ustawiane są wszelkie niezbędne parametry do utworzenia okna aplikacji. Definiowany jest rozmiar okna, tryb pracy biblioteki openGl, a także odświeżanie okna oraz obsługa zdarzeń. W aplikacji została zaimplementowana obsługa zdarzeń, po przez stworzenie jednej wielkiej tablicy z aktualnym stanem klawiszy.
 \newline
 
 \indent W celu obsługi zdarzeń klawiszy została stworzona funkcja o nazwie handleKeys, która została przedstawiona w listingu kodu poniżej. W funkcji tej wykrywane jest, który klawisz został naciśnięty i odpowiednio zmieniany jest jego stan w tablicy.
