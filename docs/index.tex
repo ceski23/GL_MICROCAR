@@ -70,7 +70,7 @@ Stworzony pojazd z pozwala na jazdę do przodu oraz do tyłu, zaimplementowane z
 \subsection{Wykorzystane technologie}
 Projekt został napisany przy wykorzystaniu języka C++ w wersji 11. Przy tworzeniu projektu wykorzystywaliśmy bibliotekę graficzną \textit{OpenGL}. Oprócz niej wykorzystana została biblioteka \textit{OpenGL Mathematics}, która pozwala na proste wykorzystanie bardziej skomplikowanych narzędzi aparatu matematycznego. Kolejną biblioteką była \textit{GLFW}, która zapewnia proste API do tworzenia okien, kontekstów i powierzchni, odbierania danych wejściowych i zdarzeń. Załadowanie tych bibliotek było możliwe dzięki bibliotece \textit{OpenGL Extension Wrangler Library}, która zapewnia wydajne mechanizmy uruchamiania w celu określenia, które rozszerzenia OpenGL są obsługiwane na platformie docelowej.
 
-Modele poszczególnych części samochodu zostały stworrzone w narzędziu \textit{Blender}, który jest otwartym oprogramowaniem do modelowania i renderowania obrazów oraz animacji trójwymiarowych. Następnie dzięki bibliotece \textit{Open Asset Import Library} zostały one umieszczone w programie.
+Modele poszczególnych części samochodu zostały stworzone w narzędziu \textit{Blender}, który jest otwartym oprogramowaniem do modelowania i renderowania obrazów oraz animacji trójwymiarowych. Następnie dzięki bibliotece \textit{Open Asset Import Library} zostały one umieszczone w programie.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -137,7 +137,7 @@ int main()
 \end{cppcode}
 
 Pierwszym plikiem jaki zostął stworzony podczas tworzenia programu był plik Main.cpp wraz z główną funkcją. Funkcja ta jest samym centrum programu. W pętli głównej będą wywoływane główne funkcje odpowiedzialne za obsługę zdarzeń, obsługę shaderów oraz renderowanie poszczególnych elementów.
-To własnie ta pętla odpowiada za ponowne wyświetlanie wszystkich elementów.
+To właśnie ta pętla odpowiada za ponowne wyświetlanie wszystkich elementów.
 
 \begin{cppcode}
 
@@ -163,9 +163,9 @@ void computeFPS(GLFWwindow* pWindow)
 }
 \end{cppcode}
 
-Pierwszą funkcje jaka została zainmplementowana w programie to był licznik kaltek na sekundę, który następnie został umieszczony w tytule okna. Dzięki niemu w łatwy sposób mogliśmy określić wydajność naszej aplikacji. Licznik ten działa w oparciu o ilość czasu który upłynął pomiędzy kolejnymi iteracjami programu.
+Pierwszą funkcje jaka została zaimplementowana w programie to był licznik klatek na sekundę, który następnie został umieszczony w tytule okna. Dzięki niemu w łatwy sposób mogliśmy określić wydajność naszej aplikacji. Licznik ten działa w oparciu o ilość czasu który upłynął pomiędzy kolejnymi iteracjami programu.
 \newline
-\indent Aby uniknąć nadmiarowej ilośći kodu w głownym pliku aplikacji, całość kodu odpowiedzialnego za inicjalizacje oraz konfigurację okna został umieszczony w osobnym pliku o nazwie Window.cpp
+\indent Aby uniknąć nadmiarowej ilości kodu w głównym pliku aplikacji, całość kodu odpowiedzialnego za inicjalizacje oraz konfigurację okna został umieszczony w osobnym pliku o nazwie Window.cpp
 \begin{cppcode}
 
 int Window::Initialize()
@@ -224,7 +224,7 @@ int Window::Initialize()
 }
 \end{cppcode}
 
-W funkcji inicjalizacyjnej okna ustawiane są wszelkie niezbędne parametry do utworzenia okna aplikacji. Definiowany jest rozmiar okna, tryb pracy biblioteki openGl, a także odświeżanie okna oraz obsługa zdarzeń. W aplikacji została zainmplementowana obsługa zdarzeń, po przez stworzenie jednej wielkiej tablicy z aktualnym stanem klawiszy.
+W funkcji inicjalizacyjnej okna ustawiane są wszelkie niezbędne parametry do utworzenia okna aplikacji. Definiowany jest rozmiar okna, tryb pracy biblioteki openGl, a także odświeżanie okna oraz obsługa zdarzeń. W aplikacji została zaimplementowana obsługa zdarzeń, po przez stworzenie jednej wielkiej tablicy z aktualnym stanem klawiszy.
 \newline
 
 \indent W celu obsługi zdarzeń klawiszy została stworzona funkcja o nazwie handleKeys, która została przedstawiona w listingu kodu poniżej. W funkcji tej wykrywane jest, który klawisz został naciśnięty i odpowiednio zmieniany jest jego stan w tablicy.
@@ -298,6 +298,36 @@ void Window::createCallbacks()
 Klasa Window, posiada również dwa konstruktory. Jeden z nich służy do utworzenia okna o zadanym rozmiarze, natomiast drugo tworzy okno o rozmiarze 800x600 [px]. Można znaleść również destruktor tej klasy który uwalnia pamięć, która była wykorzystywana przez ten obiekt. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\subsection{Kamera}
+Aby móc modyfikować to co użytkownik widzi na ekranie napisana została klasa \mintinline{cpp}{Camera} implementująca kamerę. Aby zdefiniować kamerę, potrzebujemy jej pozycji w przestrzeni świata, kierunku, w którym patrzy, wektora wskazującego w prawo i wektora skierowanego w górę od kamery. Będziemy tworzyć układ współrzędnych z 3 prostopadłymi do siebie osiami jednostkowymi z pozycją kamery jako początkiem układu.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{camera_axes.png}
+    \caption{Najważniejsze parametry kamery}
+    \label{fig:camera}
+    % \vspace{0.5cm}
+\end{figure}
+
+Jeżeli zdefiniuje się przestrzeń współrzędnych za pomocą 3 prostopadłych (lub nie liniowych) osi, można utworzyć macierz z tymi 3 osiami i wektorem translacji, dzięki czemu można przekształcić dowolny wektor do tego stworzonego układu współrzędnych, mnożąc ten wektor przez tą macierz. Ta zależność znacznie ułatwia dalszą implementację kamery. Opisany wyżej proces jest realizowany przez funkcję \mintinline{cpp}{glm::lookAt()}, która wymaga wektora pozycji, punktu, na który ma być skierowana kamera i górnego wektora. Tworzy ona odpowiednią macierz widoku.
+
+Kolejnym krokiem było umożliwienie poruszania kamerą przez użytkownika. W tym celu utworzona została funkcja \mintinline{cpp}{MouseControl()}, dzięki której każdorazowe naciśnięcie jednego z klawiszy strzałek spowoduje aktualizację pozycji kamery. Do poruszania się do przodu lub do tyłu, należy dodać lub odjąć wektor kierunku od wektora położenia. Natomiast do przesuwania się na boki, wykonać iloczyn wektorowy, aby utworzyć prawy wektor i odpowiednio poruszać się wzdłuż tego wektora w prawo.
+
+Do pełnej wygody korzystania z kamery brakowało jeszcze możliwości rozglądania się. Do tego celu wykorzystaliśmy kąty Eulera — \textit{pitch}, \textit{yaw} i \textit{roll}. 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{euler_axes.png}
+    \caption{Rozkład kątów Eulera}
+    \label{fig:axes}
+    % \vspace{0.5cm}
+\end{figure}
+
+Pitch to kąt, który obrazuje, jak bardzo patrzymy w górę lub w dół. Yaw reprezentuje wielkość tego jak bardzo patrzymy w lewo lub w prawo. Roll oznacza, jak bardzo się turlamy, co jest najczęściej używane w statkach kosmicznych i powietrznych. Każdy z kątów Eulera jest reprezentowany przez pojedynczą wartość, a za pomocą kombinacji wszystkich trzech z nich możemy obliczyć dowolny wektor rotacji w 3D.
+
+W naszy systemie wykorzystaliśmy tylko kąty \textit{pitch} i \textit{yaw}, a do ich modyfikacji wykorzystujemy ruch myszki.
+
 
 \subsection{Utworzenie podłoża}
 Pierwszą rzeczą jaką postanowiliśmy utworzyć w naszym programie było podłoże na którym będzie stał nasz obiekt. 
@@ -445,19 +475,138 @@ Jak widać na rysunku \ref{fig:podwozie} podwozie składa się z kilku  prostych
 \end{figure}
 
  Na rysunku \ref{fig:joint} został zaprezentowany przegub Cardana, który jest istotnym elementem każdego wału napędowego w samochodzie. Przeguby w układach napędowych służą do przekazywania momentu obrotowego z jednego wału na inny, gdy osie obrotu tych wałów są do siebie nachylone. Stworzenie takeigo elementu w programie Blender nie było trudne. Taki przegub składa się z dwóch rzeczy: krzyżaka oraz jego uchwytu.
- \newline
- \indent W podobny sposób zostały wykonane koła dla samochodu. Zostało stworzone jedno koło, które następnie zostało wielokrotnie wykorzystane w procesie implementacji modelu. 
- \newline
- \indent Cała karoseria pojazdu na początku została stworzona jako jednolita bryła, niestety w taki sposób nie istnieje łatwy sposób na zaanimowanie pewnych części karoserii. Jako osobne obiekty zostały wyeksportowane takie lementy jak: maska oraz klapa bagażnika. W ten o to sposób samochód zyskał możliwość otwierania oraz zamykania klaby bagażnika oraz maski. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{kolo.png}
+    \caption{Koło samochodu}
+    \label{fig:kolo}
+\end{figure}
+ 
+ W podobny sposób zostały wykonane koła dla samochodu. Zostało stworzone jedno koło, które następnie zostało wielokrotnie wykorzystane w procesie implementacji modelu. 
+
+ \begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{nadwozie.png}
+    \caption{Nadwozie samochodu}
+    \label{fig:nadwozie}
+\end{figure}
+
+Cała karoseria pojazdu na początku została stworzona jako jednolita bryła, niestety w taki sposób nie istnieje łatwy sposób na zaanimowanie pewnych części karoserii. Jako osobne obiekty zostały wyeksportowane takie lementy jak: maska oraz klapa bagażnika. W ten o to sposób samochód zyskał możliwość otwierania oraz zamykania klaby bagażnika oraz maski. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{maska.png}
+    \caption{Maska pojazdu}
+    \label{fig:maska}
+\end{figure}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Implementacja modeli w programie}
+Stworzone w Blenderze modele 3D należało następnie dodać do projektu. Aby to zrobić posłużyliśmy się biblioteką \textit{Assimp}. Służy ona do importowania modeli 3D w różnych formatach do OpenGL'a.
+
+Na początku utworzyliśmy klasę \mintinline{cpp}{Model}, która będzie służyła jako kontener na meshe, materiały i tekstury naszych obiektów. Klasa ta posiada kilka metod do ładowania poszczególnych części modelu, a także funkcję \mintinline{cpp}{RenderModel()}, dzięki której cały model jest renderowany w oknie.
+
+\begin{figure}[H]
+\begin{cppcode}
+void Model::LoadModel(const std::string& fileName)
+{
+	Assimp::Importer importer;
+	const aiScene *scene = importer.ReadFile(fileName, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices);
+	LoadNode(scene->mRootNode, scene);
+	LoadMaterials(scene);
+}
+\end{cppcode}
+\caption{Funkcja ładująca model}
+\end{figure}
+
+\begin{figure}[H]
+\begin{cppcode}
+void Model::RenderModel()
+{
+	for (size_t i = 0; i < meshList.size(); i++) {
+		unsigned int materialIndex = meshToTex[i];
+
+		if (materialIndex < textureList.size() && textureList[materialIndex]) {
+			textureList[materialIndex]->UseTexture();
+		}
+		meshList[i]->RenderMesh();
+	}
+}
+\end{cppcode}
+\caption{Funkcja renderująca model}
+\end{figure}
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \subsection{Ożywienie samochodu}
+
+W celu łatwiejszego zarządzania pojazdem utworzona została klasa \mintinline{cpp}{Car}, w której zawarte zostały najważniejsze parametry pojazdu. Funkcja \mintinline{cpp}{computeMovement()} służy do obliczenia pozycji samochodu oraz obrotu kół.
+
+\begin{cppcode}
+void Car::computeMovement(GLfloat deltaTime)
+{
+	GLfloat angle = (velocity * deltaTime) / 1.0f;
+	wheelRotation += glm::degrees(angle);
+	wheelRotation = fmod(wheelRotation, 360.0f);
+
+	GLfloat roadLength = (velocity * deltaTime);
+	position[0] += roadLength * sin(glm::radians(azymuth * 0.5));
+	position[1] += roadLength * cos(glm::radians(azymuth * 0.5));
+}
+\end{cppcode}
+
+Obliczane w tej funkcji parametry są potem uwzględniane przy renderowaniu modelu.
+
+\begin{itemize}
+\item Strzałka w górę — zwiększa prędkość pojazdu
+\item Strzałka w dół — zmniejsza prędkość pojazdu
+\item Strzałka w lewo — obrót kół w lewo
+\item Strzałka w prawo — obrót kół w prawo
+
+\item Klawisz 1 — otwieranie maski
+\item Klawisz 2 — zamykanie maski
+\item Klawisz 3 — otwieranie bagażnika
+\item Klawisz 4 — zamykanie bagażnika
+\end{itemize}
+
+W funkcji \mintinline{cpp}{reactToInput()} modyfikowane są parametry samochodu w zależności od wciśniętych klawiszy. Dzięki temu doszła możliwość otwierania bagażnika oraz maski, a także skręcania kołami.
+
+\begin{cppcode}
+void Car::reactToInput(bool* keys)
+{
+	if (keys[GLFW_KEY_UP] && velocity < maxSpeed) velocity += 0.1f;
+	if (keys[GLFW_KEY_DOWN] && velocity > -maxSpeed) velocity -= 0.1f;
+	if (keys[GLFW_KEY_SPACE]) velocity = 0.0f;
+
+	if (keys[GLFW_KEY_1] && hoodDegree < 90.0f) hoodDegree += 1.0f;
+	if (keys[GLFW_KEY_2] && hoodDegree > 0.0f) hoodDegree -= 1.0f;
+
+	if (keys[GLFW_KEY_3] && flapDegree < 90.0f) flapDegree += 1.0f;
+	if (keys[GLFW_KEY_4] && flapDegree > 0.0f) flapDegree -= 1.0f;
+
+	if (keys[GLFW_KEY_LEFT] && turnAngle < 30.0f) turnAngle += 0.2f;
+	if (keys[GLFW_KEY_RIGHT] && turnAngle > -30.0f) turnAngle -= 0.2f;
+
+	hideBody = keys[GLFW_KEY_B];
+}
+\end{cppcode}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Obsługa programu}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{okno.png}
+    \caption{Okno z samochodem}
+    \label{fig:okno}
+\end{figure}
+
 \section{Podsumowanie}
+
+Jak widać na rysunku \ref{fig:furgon} efekt naszej pracy jest bardzo bliski temu co staraliśmy się odwzorować. Nie był to łątwy projekt. Podczas jego realizacji napotkaliśmy wiele problemów. Niektóre z nich były łatwe w rozwiązaniu, np. problem z ruchem kamery oraz prawidłowym ładowaniu tekstur, a niektóre zajęły czasami tygodnie. Najtrudniejszym zadaniem okazało się poprawne umieszczenie stworzonego obiektu w Blenderze oraz jego zaanimowanie.
+
 \begin{figure}[h!]
     \centering
     \subfloat{\includegraphics[width=0.5\textwidth]{furgon.jpg}}
@@ -467,9 +616,9 @@ Jak widać na rysunku \ref{fig:podwozie} podwozie składa się z kilku  prostych
     % \vspace{0.5cm}
 \end{figure}
 
-Jak widać na rysunku \ref{fig:furgon} efekt naszej pracy jest bardzo bliski temu co staraliśmy się odwzorować. Nie był to łątwy projekt. Podczas jego realizacji napotkaliśmy wiele problemów. Niektóre z nich były łatwe w rozwiązaniu, np. problem z ruchem kamery oraz prawidłowym ładowaniu tekstur, a niektóre zajęły czasami tygodnie. Najtrudniejszym zadaniem okazało się poprawne umieszczenie stworzonego obiektu w Blenderze oraz jego zaanimowanie. Autorzy projektu nigdy wcześniej nie mieli styczności z takim typem projektu. Wymagało to od nich nabycia zupełnie nowej wiedzy, aby zrealizować ten projekt bez problemów.
-\newline
-\indent Podczas realizacji projektu niezwykle pomocnym okazały się wykłady prowadzone przez Pana Dr. Ryszarda Leniowskiego. Dzięki tym wykładą autorzy projektu mogli zrozumieć charakterysytkę projektu jaki sobie postawili za cel do zrealizowania, a także dogłębnie zorzumieć jak działają biblioteki graficzne.
+Autorzy projektu nigdy wcześniej nie mieli styczności z takim typem projektu. Wymagało to od nich nabycia zupełnie nowej wiedzy, aby zrealizować ten projekt bez problemów.
+
+Podczas realizacji projektu niezwykle pomocnym okazały się wykłady prowadzone przez Pana Dr. Ryszarda Leniowskiego. Dzięki tym wykładą autorzy projektu mogli zrozumieć charakterysytkę projektu jaki sobie postawili za cel do zrealizowania, a także dogłębnie zorzumieć jak działają biblioteki graficzne.
 
 % \begin{pythoncode}
 % def forward(self, x):

@@ -14,13 +14,9 @@ using namespace std;
 class Model
 {
 public:
-	Model();
-
 	void LoadModel(const string& fileName);
 	void RenderModel();
 	void ClearModel();
-
-	~Model();
 
 private:
 
