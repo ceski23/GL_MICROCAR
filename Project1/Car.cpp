@@ -20,25 +20,25 @@ void Car::computeMovement(GLfloat deltaTime)
 void Car::loadModels()
 {
 	jointModel = Model();
-	jointModel.LoadModel("Models/jointNew.obj");
+	jointModel.LoadModel("Models/cardan.obj");
 
 	bodyModel = Model();
-	bodyModel.LoadModel("Models/nadwozieRdy.obj");
+	bodyModel.LoadModel("Models/body.obj");
 
 	chassisModel = Model();
-	chassisModel.LoadModel("Models/podwozieCzarka.obj");
+	chassisModel.LoadModel("Models/chassis.obj");
 
 	hoodModel = Model();
-	hoodModel.LoadModel("Models/maska.obj");
+	hoodModel.LoadModel("Models/hood.obj");
 
 	doorsModel = Model();
-	doorsModel.LoadModel("Models/tylneDrzwi.obj");
+	doorsModel.LoadModel("Models/door.obj");
 
 	windowsModel = Model();
-	windowsModel.LoadModel("Models/okna.obj");
+	windowsModel.LoadModel("Models/windows.obj");
 
 	wheelModel = Model();
-	wheelModel.LoadModel("Models/koloCzarka3.obj");
+	wheelModel.LoadModel("Models/wheel.obj");
 }
 
 void Car::render(GLuint uniformModel)
